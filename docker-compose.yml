@@ -1,0 +1,42 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+        - PGUSER=postgres
+        - PGHOST=postgres
+        - PGDATABASE=postgres
+        - PGPASSWORD=postgres
+        - POSTGRES_PASSWORD=postgres
+        - PGPORT=5432
+  movie-web-app:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    volumes:
+      - /home/node/app/node_modules
+      - ./client:/home/node/app
+    ports:
+      - '3000:3000'
+    restart: on-failure
+    container_name: movie-web-app
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+  movie-manager-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.dev
+    ports:
+      - '3001:3001'
+    restart: on-failure
+    container_name: movie-manager-api
+    volumes:
+      - /home/node/app/node_modules # Inside the container, don't try to override this folder, just leave as is
+      - ./api:/home/node/app # Look at the server directory and copy everything into the app folder in the container
+    environment:
+      - PGUSER=postgres
+      - PGHOST=postgres
+      - PGDATABASE=postgres
+      - PGPASSWORD=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGPORT=5432
